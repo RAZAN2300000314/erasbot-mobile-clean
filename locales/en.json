@@ -1,0 +1,18 @@
+{
+  "settings": "Settings",
+  "language": "Language",
+  "darkMode": "Dark Mode",
+  "logout": "Logout",
+  "education": "Education",
+  "booked": "Booked",
+  "universities": "Universities",
+  "apis": "APIs",
+  "feedbackSection": "Feedback Section",
+  "courseDetails": "Courses Details",
+  "home": "Home",
+  "advisory": "Advisory",
+  "account": "Account",
+  "apiAlert": "APIs will be added to this mobile application.",
+  "ectsTitle": "ECTS Calculator",
+  "totalECTS": "Total ECTS"
+}
