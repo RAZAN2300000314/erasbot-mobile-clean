@@ -1,14 +1,8 @@
 // app/context/FavoritesContext.tsx
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from 'react';
 
-export type Course = {
-  id?: string;             // optional for fallback
+import React, { createContext, useContext, useState } from 'react';
+
+type Course = {
   name: string;
   courseCode: string;
 };
@@ -16,29 +10,23 @@ export type Course = {
 type FavoritesContextType = {
   favorites: Course[];
   addFavorite: (course: Course) => void;
-  removeFavorite: (id: string) => void;
+  removeFavorite: (courseCode: string) => void;
 };
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
-export const FavoritesProvider = ({ children }: { children: ReactNode }) => {
+export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [favorites, setFavorites] = useState<Course[]>([]);
 
   const addFavorite = (course: Course) => {
-    const uniqueId = course.id ?? course.courseCode;
-    setFavorites((prev) => {
-      if (prev.some((c) => (c.id ?? c.courseCode) === uniqueId)) return prev;
-      return [...prev, { ...course, id: uniqueId }];
-    });
+    if (!favorites.find((c) => c.courseCode === course.courseCode)) {
+      setFavorites((prev) => [...prev, course]);
+    }
   };
 
-  const removeFavorite = (id: string) => {
-    setFavorites((prev) => prev.filter((c) => (c.id ?? c.courseCode) !== id));
+  const removeFavorite = (courseCode: string) => {
+    setFavorites((prev) => prev.filter((c) => c.courseCode !== courseCode));
   };
-
-  useEffect(() => {
-    console.log('Favorites Updated:', favorites);
-  }, [favorites]);
 
   return (
     <FavoritesContext.Provider value={{ favorites, addFavorite, removeFavorite }}>
@@ -49,8 +37,6 @@ export const FavoritesProvider = ({ children }: { children: ReactNode }) => {
 
 export const useFavorites = () => {
   const context = useContext(FavoritesContext);
-  if (!context) {
-    throw new Error('useFavorites must be used within a FavoritesProvider');
-  }
+  if (!context) throw new Error('useFavorites must be used within a FavoritesProvider');
   return context;
 };

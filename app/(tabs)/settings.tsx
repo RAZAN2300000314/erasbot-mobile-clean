@@ -56,10 +56,10 @@ const SettingsScreen = () => {
         </View>
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 10, marginLeft: 5 }}>
           <TouchableOpacity onPress={() => changeLanguage('en')}>
-            <Text style={[styles.languageText, { color: selectedLanguage === 'English' ? 'blue' : colors.text }]}> English </Text>
+            <Text style={[styles.languageText, { color: selectedLanguage === 'English' ? colors.primary : colors.text }]}> English </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => changeLanguage('tr')}>
-            <Text style={[styles.languageText, { color: selectedLanguage === 'Türkçe' ? 'blue' : colors.text }]}> Türkçe </Text>
+            <Text style={[styles.languageText, { color: selectedLanguage === 'Türkçe' ? colors.primary : colors.text }]}> Türkçe </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -84,7 +84,7 @@ const SettingsScreen = () => {
       </TouchableOpacity>
 
       {/* Footer Navigation */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { backgroundColor: colors.card }]}>
         <FooterIcon
           onPress={() => router.push('/(tabs)/homeScreen')}
           imageSource={require('../../assets/images/home.png')}
@@ -132,7 +132,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
   },
   headerGradient: {
     width: '100%',
@@ -145,11 +144,9 @@ const styles = StyleSheet.create({
   },
   screenTitle: {
     fontSize: 20,
-    color: 'rgb(19, 85, 151)',
     fontWeight: 'bold',
     alignSelf: 'center',
     marginTop: 10,
-    
   },
   settingOption: {
     flexDirection: 'row',
@@ -189,7 +186,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
-    backgroundColor: '#FFFFFF',
     paddingVertical: 15,
     position: 'absolute',
     bottom: 0,
@@ -211,7 +207,6 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 11,
     marginTop: 5,
-    color: '#000',
   },
 });
 

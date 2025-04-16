@@ -15,7 +15,6 @@ import { useBookedCourses } from '../context/BookedCoursesContext';
 import { universityCourses } from '../data/universityCourses';
 
 type Course = {
-  id: string;
   name: string;
   courseCode: string;
 };
@@ -26,7 +25,7 @@ type UniversityCoursesScreenProps = {
 
 export default function UniversityCoursesScreen({ universityId }: UniversityCoursesScreenProps) {
   const router = useRouter();
-  const { addFavorite } = useFavorites();
+  const { addFavorite, removeFavorite, favorites } = useFavorites();
   const { addBookedCourse } = useBookedCourses();
   const [searchText, setSearchText] = useState('');
 
@@ -54,7 +53,8 @@ export default function UniversityCoursesScreen({ universityId }: UniversityCour
         data={filteredCourses}
         keyExtractor={(item) => item.courseCode}
         renderItem={({ item }) => {
-          const courseWithId = { ...item, id: item.courseCode }; // Ensure 'id' for FavoritesContext
+          const isFavorited = favorites.some((fav) => fav.courseCode === item.courseCode);
+
           return (
             <View style={styles.courseContainer}>
               <View style={styles.courseInfo}>
@@ -62,11 +62,22 @@ export default function UniversityCoursesScreen({ universityId }: UniversityCour
                 <Text style={styles.courseDetails}>Code: {item.courseCode}</Text>
               </View>
               <View style={styles.courseActions}>
-                <TouchableOpacity onPress={() => addBookedCourse(courseWithId)} style={styles.addButton}>
+                <TouchableOpacity onPress={() => addBookedCourse(item)} style={styles.addButton}>
                   <Text style={styles.addButtonText}>+</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => addFavorite(courseWithId)}>
-                  <Image source={require('../../assets/images/heart.png')} style={styles.heartIcon} />
+                <TouchableOpacity
+                  onPress={() => {
+                    isFavorited ? removeFavorite(item.courseCode) : addFavorite(item);
+                  }}
+                >
+                  <Image
+                    source={
+                      isFavorited
+                        ? require('../../assets/images/heart-filled.png')
+                        : require('../../assets/images/heart.png')
+                    }
+                    style={styles.heartIcon}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -116,6 +127,7 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     width: '90%',
+    height: 40,
     borderWidth: 1,
     borderRadius: 10,
     margin: 12,

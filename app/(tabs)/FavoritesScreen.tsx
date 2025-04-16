@@ -14,8 +14,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const FavoritesScreen = () => {
   const { favorites, removeFavorite } = useFavorites();
-  console.log("Current favorites from context:", favorites);
-
 
   const renderItem = ({ item }: any) => (
     <View style={styles.favoriteItem}>
@@ -23,7 +21,7 @@ const FavoritesScreen = () => {
         <Text style={styles.courseName}>{item.name}</Text>
         <Text style={styles.courseCode}>Code: {item.courseCode}</Text>
       </View>
-      <TouchableOpacity onPress={() => removeFavorite(item.id)}>
+      <TouchableOpacity onPress={() => removeFavorite(item.courseCode)}>
         <Image source={require('../../assets/images/close.png')} style={styles.removeIcon} />
       </TouchableOpacity>
     </View>
@@ -40,20 +38,9 @@ const FavoritesScreen = () => {
       ) : (
         <FlatList
           data={favorites}
-          keyExtractor={(item) => item.id ?? item.courseCode}
-
-          renderItem={({ item }) => (
-            <View style={styles.favoriteItem}>
-              <View>
-                <Text style={styles.courseName}>{item.name}</Text>
-                <Text style={styles.courseCode}>Code: {item.courseCode}</Text>
-              </View>
-              <TouchableOpacity onPress={() => removeFavorite(item.id ?? item.courseCode)}>
-                <Image source={require('../../assets/images/close.png')} style={styles.removeIcon} />
-              </TouchableOpacity>
-            </View>
-          )}
-          contentContainerStyle={{ paddingTop: 20 }}
+          keyExtractor={(item) => item.courseCode}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingTop: 20, paddingBottom: 100 }}
         />
       )}
     </View>
@@ -63,10 +50,26 @@ const FavoritesScreen = () => {
 export default FavoritesScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  headerGradient: { height: 90, justifyContent: 'center', alignItems: 'center' },
-  screenTitle: { fontSize: 25, fontWeight: 'bold', color: '#003366' },
-  noFavorites: { textAlign: 'center', marginTop: 20, fontSize: 16, color: '#000' },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  headerGradient: {
+    height: 90,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  screenTitle: {
+    fontSize: 25,
+    fontWeight: 'bold',
+    color: '#003366',
+  },
+  noFavorites: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#000',
+  },
   favoriteItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -77,7 +80,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#D0E7FF',
     borderRadius: 10,
   },
-  courseName: { fontSize: 16, fontWeight: '500', color: '#003366' },
-  courseCode: { fontSize: 14, color: '#555' },
-  removeIcon: { width: 20, height: 20, tintColor: '#cc0000' },
+  courseName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#003366',
+  },
+  courseCode: {
+    fontSize: 14,
+    color: '#555',
+  },
+  removeIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#cc0000',
+  },
 });

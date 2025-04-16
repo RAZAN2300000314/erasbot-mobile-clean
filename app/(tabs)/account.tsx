@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,32 +7,58 @@ import {
   StyleSheet,
   Linking,
   ScrollView,
-  ImageSourcePropType,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFavorites } from '../context/FavoritesContext';
-
-interface FooterIconProps {
-  onPress: () => void;
-  imageSource: ImageSourcePropType;
-  label: string;
-}
-
-const FooterIcon: React.FC<FooterIconProps> = ({ onPress, imageSource, label }) => (
-  <TouchableOpacity style={styles.footerItem} onPress={onPress}>
-    <Image source={imageSource} style={styles.footerIcon} />
-    <Text style={styles.footerText}>{label}</Text>
-  </TouchableOpacity>
-);
+import * as ImagePicker from 'expo-image-picker';
+import { useUser } from '../context/UserContext'; // ✅ Import user context
 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
   const { favorites } = useFavorites();
+  const { userName, profileImage, setProfileImage } = useUser(); // ✅ From context
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Permission to access media library is required!');
+      }
+    })();
+  }, []);
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  };
 
   const openEmail = () => Linking.openURL('mailto:kultur@iku.edu.tr');
   const makeCall = (phone: string) => Linking.openURL(`tel:${phone}`);
   const openSocial = (url: string) => Linking.openURL(url);
+
+  const FooterIcon = ({
+    onPress,
+    imageSource,
+    label,
+  }: {
+    onPress: () => void;
+    imageSource: any;
+    label: string;
+  }) => (
+    <TouchableOpacity style={styles.footerItem} onPress={onPress}>
+      <Image source={imageSource} style={styles.footerIcon} />
+      <Text style={styles.footerText}>{label}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
@@ -41,22 +67,29 @@ const ProfileScreen: React.FC = () => {
           <Text style={styles.screenTitle}>My Profile</Text>
         </LinearGradient>
 
-        <Image source={require('../../assets/images/userpic.png')} style={styles.profilePic} />
+        <TouchableOpacity onPress={pickImage}>
+          <Image
+            source={
+              profileImage
+                ? { uri: profileImage }
+                : require('../../assets/images/userpic.png')
+            }
+            style={styles.profilePic}
+          />
+          <Text style={styles.changePhotoText}>Change Photo</Text>
+        </TouchableOpacity>
 
-        <Text style={styles.optionText}>User Name</Text>
+        <Text style={styles.optionText}>{userName || 'Guest'}</Text>
         <View style={styles.divider} />
+
         <Text style={styles.optionText}>Notifications</Text>
         <View style={styles.divider} />
 
-        {/* My Favorites link */}
         <TouchableOpacity onPress={() => router.push('/(tabs)/FavoritesScreen')}>
           <Text style={styles.sectionTitle}>My Favorites</Text>
         </TouchableOpacity>
-
-        {/* Divider between favorites and contact info */}
         <View style={styles.divider} />
 
-        {/* Contact Info */}
         <Text style={styles.sectionTitle}>Contact Info</Text>
         <View style={styles.contactRow}>
           <TouchableOpacity onPress={openEmail}>
@@ -73,7 +106,6 @@ const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Social Media */}
         <View style={styles.socialRow}>
           <View style={styles.iconWithLabel}>
             <TouchableOpacity onPress={() => openSocial('https://www.facebook.com/IKUEDU')}>
@@ -81,14 +113,12 @@ const ProfileScreen: React.FC = () => {
             </TouchableOpacity>
             <Text style={styles.iconLabel}>İstanbul Kültür Üniversitesi</Text>
           </View>
-
           <View style={styles.iconWithLabel}>
             <TouchableOpacity onPress={() => openSocial('https://www.instagram.com/kulturuniversity/')}>
               <Image source={require('../../assets/images/instagram.png')} style={styles.socialIcon} />
             </TouchableOpacity>
             <Text style={styles.iconLabel}>@kulturuniversity</Text>
           </View>
-
           <View style={styles.iconWithLabel}>
             <TouchableOpacity onPress={() => openSocial('https://twitter.com/Kultur_uni')}>
               <Image source={require('../../assets/images/twitter.png')} style={styles.socialIcon} />
@@ -112,13 +142,8 @@ const ProfileScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  scrollContainer: {
-    alignItems: 'center',
-  },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  scrollContainer: { alignItems: 'center' },
   headerGradient: {
     width: '100%',
     height: 90,
@@ -131,10 +156,17 @@ const styles = StyleSheet.create({
     color: '#003366',
   },
   profilePic: {
-    width: 90,
-    height: 90,
-    borderRadius: 65,
-    marginBottom: 30,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginTop: 20,
+    marginBottom: 5,
+  },
+  changePhotoText: {
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#007AFF',
+    marginBottom: 15,
   },
   optionText: {
     fontSize: 24,

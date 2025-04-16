@@ -341,10 +341,10 @@ export const universityCourses: UniversityCourses = {
       { id: '5', name: 'Introduction to Machine Learning', courseCode: 'IP 301' },
       { id: '6', name: 'Programming Paradigms', courseCode: 'INFM121SE' },
       { id: '7', name: 'Programming 2', courseCode: 'EEIB330' },
-      { id: '8', name: 'User-Centered Design', courseCode: 'IIBB360' },
+      { id: '8', name: 'User-Centered Design', courseCode: 'IIBB361' },
       { id: '9', name: 'Programming 2 + Lab + Project Object Oriented Programming (OOP)', courseCode: 'EEIB330' },
       { id: '10', name: 'German as a Foreign Language A1.1', courseCode: 'CEFR A1' },
-      { id: '11', name: 'German as a Foreign Language A1.2', courseCode: 'CEFR A1' },
+      { id: '11', name: 'German as a Foreign Language A1.2', courseCode: 'CEFR A2' },
     ],
   },
 };
