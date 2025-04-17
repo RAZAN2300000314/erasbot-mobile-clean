@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { fetchFeatureToggles } from '../../services/toogleService'; // ✅ ONLY this
 
 interface ApiItem {
   id: string;
@@ -18,64 +19,71 @@ interface ApiItem {
   description: string;
   image: any;
   url: string;
+  enabled: boolean;
 }
-
-const apiItems: ApiItem[] = [
-  {
-    id: '1',
-    title: 'TripAdvisor',
-    description:
-      'TripAdvisor helps students explore top-rated restaurants, attractions, and local experiences during their Erasmus stay.',
-    image: require('../../assets/images/tripadvisor.png'),
-    url: 'https://www.tripadvisor.com/',
-  },
-  {
-    id: '2',
-    title: 'Yelp',
-    description:
-      'Yelp provides reviews and recommendations on local businesses, making it easier for students to find food, services, and entertainment nearby.',
-    image: require('../../assets/images/yelp.png'),
-    url: 'https://www.yelp.careers/us/en',
-  },
-  {
-    id: '3',
-    title: 'Weather',
-    description:
-      'OpenWeather gives students real-time weather updates, helping them plan their activities and stay prepared for all conditions.',
-    image: require('../../assets/images/weather.png'),
-    url: 'https://openweathermap.org/',
-  },
-  {
-    id: '4',
-    title: 'Google Maps',
-    description:
-      'Google Maps assists students in navigating their new city, finding key locations, and planning efficient travel routes.',
-    image: require('../../assets/images/map.png'),
-    url: 'https://www.google.com/maps/@40.9792594,28.7309824,14z?entry=ttu',
-  },
-];
 
 const APIsScreen = () => {
   const router = useRouter();
   const [searchText, setSearchText] = useState('');
+  const [apiItems, setApiItems] = useState<ApiItem[]>([]);
+
+  useEffect(() => {
+    const loadToggles = async () => {
+      const toggles = await fetchFeatureToggles(); // ✅ Firestore-based config
+
+      setApiItems([
+        {
+          id: '1',
+          title: 'TripAdvisor',
+          description: 'TripAdvisor helps students explore top-rated restaurants, attractions, and local experiences during their Erasmus stay.',
+          image: require('../../assets/images/tripadvisor.png'),
+          url: 'https://www.tripadvisor.com/',
+          enabled: toggles.tripadvisor,
+        },
+        {
+          id: '2',
+          title: 'Yelp',
+          description: 'Yelp provides reviews and recommendations on local businesses, making it easier for students to find food, services, and entertainment nearby.',
+          image: require('../../assets/images/yelp.png'),
+          url: 'https://www.yelp.com/',
+          enabled: toggles.yelp,
+        },
+        {
+          id: '3',
+          title: 'Weather',
+          description: 'OpenWeather gives students real-time weather updates, helping them plan their activities and stay prepared for all conditions.',
+          image: require('../../assets/images/weather.png'),
+          url: 'https://www.meteored.com/',
+          enabled: toggles.weather,
+        },
+        {
+          id: '4',
+          title: 'Google Maps',
+          description: 'Google Maps assists students in navigating their new city, finding key locations, and planning efficient travel routes.',
+          image: require('../../assets/images/map.png'),
+          url: 'https://www.google.com/maps',
+          enabled: toggles.maps,
+        },
+      ]);
+    };
+
+    loadToggles();
+  }, []);
 
   const openLink = (url: string) => {
-    Linking.openURL(url).catch((err) => console.error('Failed to open URL:', err));
+    Linking.openURL(url).catch(err => console.error('Failed to open URL:', err));
   };
 
-  // 🔍 Filter data in real-time
-  const filteredItems = apiItems.filter((item) =>
-    item.title.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const filteredItems = apiItems
+    .filter(item => item.enabled)
+    .filter(item => item.title.toLowerCase().includes(searchText.toLowerCase()));
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      {/* Gradient Header */}
       <LinearGradient colors={['#ADD8E6', '#FFFFFF']} style={styles.headerGradient}>
         <Text style={styles.screenTitle}>APIs Management</Text>
       </LinearGradient>
 
-      {/* Search Bar */}
       <View style={styles.header}>
         <TextInput
           style={styles.searchBar}
@@ -86,8 +94,7 @@ const APIsScreen = () => {
         />
       </View>
 
-      {/* Filtered API Results */}
-      {filteredItems.map((item) => (
+      {filteredItems.map(item => (
         <View key={item.id}>
           <Text style={styles.apiTitle}>{item.title}</Text>
           <TouchableOpacity onPress={() => openLink(item.url)}>
@@ -97,7 +104,6 @@ const APIsScreen = () => {
         </View>
       ))}
 
-      {/* Footer */}
       <View style={styles.footer}>
         <FooterIcon onPress={() => router.push('/(tabs)/homeScreen')} imageSource={require('../../assets/images/home.png')} label="Education" />
         <FooterIcon onPress={() => router.push('/(tabs)/erasbot')} imageSource={require('../../assets/images/erasbot.png')} label="ERASbot" />
@@ -108,28 +114,23 @@ const APIsScreen = () => {
     </ScrollView>
   );
 };
+
 type FooterIconProps = {
   onPress: () => void;
   imageSource: any;
   label: string;
 };
 
-// Footer Component for Icon + Label
 const FooterIcon: React.FC<FooterIconProps> = ({ onPress, imageSource, label }) => (
   <TouchableOpacity style={styles.footerItem} onPress={onPress}>
     <Image source={imageSource} style={styles.footerIcon} />
     <Text style={styles.footerText}>{label}</Text>
   </TouchableOpacity>
 );
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 3,
-  },
-  scrollContent: {
-    paddingBottom: 120,
-  },
+  container: { flex: 1, backgroundColor: '#FFFFFF', paddingHorizontal: 3 },
+  scrollContent: { paddingBottom: 120 },
   headerGradient: {
     width: '100%',
     height: 90,
@@ -138,17 +139,14 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     paddingTop: 15,
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
+  header: { alignItems: 'center', marginBottom: 20 },
   searchBar: {
     width: '90%',
-  borderWidth: 1,
-  borderRadius: 10,
-  margin: 12,
-  paddingHorizontal: 15,
-  paddingVertical: 8,
+    borderWidth: 1,
+    borderRadius: 10,
+    margin: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
   },
   screenTitle: {
     fontSize: 20,
@@ -192,9 +190,7 @@ const styles = StyleSheet.create({
     elevation: 8,
     zIndex: 10,
   },
-  footerItem: {
-    alignItems: 'center',
-  },
+  footerItem: { alignItems: 'center' },
   footerIcon: {
     width: 30,
     height: 30,

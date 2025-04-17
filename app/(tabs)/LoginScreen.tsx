@@ -8,25 +8,33 @@ import {
   Image,
   Keyboard,
   TouchableWithoutFeedback,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useUser } from '../context/UserContext'; // ✅ Import UserContext
+import { useUser } from '../context/UserContext';
+import { loginUser } from '../../services/authService'; // ✅ Firebase login
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
-  const { setUserName } = useUser(); // ✅ Access setUserName
+  const { setUserName } = useUser();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
-      alert('Please enter your email and password.');
+      Alert.alert('Missing Fields', 'Please enter your email and password.');
       return;
     }
 
-    const extractedName = email.split('@')[0]; // Simulate username from email
-    setUserName(extractedName); // ✅ Set username in context
-    router.replace('/(tabs)/homeScreen'); // ✅ Navigate after login
+    try {
+      const user = await loginUser(email, password); // ✅ Firebase auth
+      const nameFromEmail = email.split('@')[0]; // Extract user-friendly name
+      setUserName(nameFromEmail); // ✅ Store in global context
+      Alert.alert('Welcome Back', `Logged in as ${nameFromEmail}`);
+      router.replace('/(tabs)/homeScreen');
+    } catch (error: any) {
+      Alert.alert('Login Failed', error.message || 'Something went wrong.');
+    }
   };
 
   return (
@@ -67,24 +75,9 @@ const LoginScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-  },
-  logo: {
-    width: 100,
-    height: 120,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
-  },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF', paddingHorizontal: 20 },
+  logo: { width: 100, height: 120, marginBottom: 20 },
+  title: { fontSize: 26, fontWeight: 'bold', marginBottom: 20, color: '#333' },
   input: {
     width: '100%',
     height: 50,
@@ -104,19 +97,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  signupText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  signupLink: {
-    color: '#007AFF',
-    fontWeight: 'bold',
-  },
+  buttonText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
+  signupText: { fontSize: 14, color: '#333' },
+  signupLink: { color: '#007AFF', fontWeight: 'bold' },
 });
 
 export default LoginScreen;

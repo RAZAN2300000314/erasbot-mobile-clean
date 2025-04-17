@@ -1,0 +1,16 @@
+{
+  "parameters": {
+    "yelp_api_enabled": {
+      "defaultValue": { "value": "true" }
+    },
+    "google_maps_api_enabled": {
+      "defaultValue": { "value": "true" }
+    },
+    "tripadvisor_api_enabled": {
+      "defaultValue": { "value": "true" }
+    },
+    "weather_api_enabled": {
+      "defaultValue": { "value": "true" }
+    }
+  }
+}
