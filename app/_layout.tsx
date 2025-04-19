@@ -1,20 +1,16 @@
+import React, { useEffect, useState } from 'react';
 import { Slot } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeContext } from './context/ThemeContext';
 import { ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
+import { UserProvider } from './context/UserContext';             // ✅ Moved to the top
+import { FavoritesProvider } from './context/FavoritesContext';   // ✅ Depends on UserProvider
 import { BookedCoursesProvider } from './context/BookedCoursesContext';
-import { FavoritesProvider } from './context/FavoritesContext';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
-import { UserProvider } from './context/UserContext';
 import { lightTheme, darkTheme } from '@/theme/theme';
-
-// ✅ REMOVE THIS: Remote Config is not compatible with Expo
-// import remoteConfig from '@react-native-firebase/remote-config';
-// import { fetchRemoteConfig } from '../services/remoteConfigService';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -37,16 +33,16 @@ export default function RootLayout() {
   return (
     <ThemeContext.Provider value={{ theme, isDarkMode, toggleTheme }}>
       <NavigationThemeProvider value={theme}>
-        <BookedCoursesProvider>
+        <UserProvider> {/* ✅ Outer provider: provides userId to others */}
           <FavoritesProvider>
-            <UserProvider>
+            <BookedCoursesProvider>
               <I18nextProvider i18n={i18n}>
                 <StatusBar style={isDarkMode ? 'light' : 'dark'} />
                 <Slot />
               </I18nextProvider>
-            </UserProvider>
+            </BookedCoursesProvider>
           </FavoritesProvider>
-        </BookedCoursesProvider>
+        </UserProvider>
       </NavigationThemeProvider>
     </ThemeContext.Provider>
   );

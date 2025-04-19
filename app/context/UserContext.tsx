@@ -1,8 +1,9 @@
-// app/context/UserContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 type UserContextType = {
+  userId: string | null;
   userName: string;
   setUserName: (name: string) => void;
   profileImage: string | null;
@@ -12,15 +13,32 @@ type UserContextType = {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState('Guest');
   const [profileImage, setProfileImageState] = useState<string | null>(null);
 
-  // Load saved image on mount
+  // Load saved profile image on mount
   useEffect(() => {
-    (async () => {
+    const loadProfileImage = async () => {
       const uri = await AsyncStorage.getItem('profileImage');
       if (uri) setProfileImageState(uri);
-    })();
+    };
+    loadProfileImage();
+  }, []);
+
+  // Listen for Firebase Auth state changes
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+        setUserName(user.displayName || 'Guest');
+      } else {
+        setUserId(null);
+        setUserName('Guest');
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   const setProfileImage = async (uri: string) => {
@@ -29,7 +47,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <UserContext.Provider value={{ userName, setUserName, profileImage, setProfileImage }}>
+    <UserContext.Provider value={{ userId, userName, setUserName, profileImage, setProfileImage }}>
       {children}
     </UserContext.Provider>
   );

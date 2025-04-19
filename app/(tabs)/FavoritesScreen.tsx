@@ -17,12 +17,12 @@ const FavoritesScreen = () => {
 
   const renderItem = ({ item }: any) => (
     <View style={styles.favoriteItem}>
-      <View>
-        <Text style={styles.courseName}>{item.name}</Text>
-        <Text style={styles.courseCode}>Code: {item.courseCode}</Text>
-      </View>
+      <Text style={styles.courseName}>{item.name}</Text>
       <TouchableOpacity onPress={() => removeFavorite(item.courseCode)}>
-        <Image source={require('../../assets/images/close.png')} style={styles.removeIcon} />
+        <Image
+          source={require('../../assets/images/close.png')}
+          style={styles.removeIcon}
+        />
       </TouchableOpacity>
     </View>
   );

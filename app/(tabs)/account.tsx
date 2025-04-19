@@ -10,14 +10,17 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useFavorites } from '../context/FavoritesContext';
 import * as ImagePicker from 'expo-image-picker';
-import { useUser } from '../context/UserContext'; // ✅ Import user context
+import { useFavorites } from '../context/FavoritesContext';
+import { useUser } from '../context/UserContext';
+import { uploadProfileImage } from '../../services/uploadServices';
+import { saveProfileImageUrl } from '../../services/firestoreService';
+import { auth } from '../../firebase/firebaseConfig';
 
 const ProfileScreen: React.FC = () => {
   const router = useRouter();
   const { favorites } = useFavorites();
-  const { userName, profileImage, setProfileImage } = useUser(); // ✅ From context
+  const { userName, profileImage, setProfileImage } = useUser();
 
   useEffect(() => {
     (async () => {
@@ -28,18 +31,46 @@ const ProfileScreen: React.FC = () => {
     })();
   }, []);
 
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
-    });
-
-    if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
+  const handleProfileImageUpload = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+      });
+  
+      if (result.canceled || !result.assets?.[0]?.uri) {
+        console.log('❌ Image selection cancelled or invalid');
+        return;
+      }
+  
+      const uri = result.assets[0].uri;
+      console.log('📷 Selected image URI:', uri); // ✅ Log the URI to check if it's content:// or file://
+  
+      setProfileImage(uri); // Preview the image
+  
+      const userId = auth.currentUser?.uid;
+      if (!userId) {
+        console.error('❌ User not authenticated');
+        return;
+      }
+  
+      console.log('📤 Uploading image to Firebase Storage...');
+      const imageUrl = await uploadProfileImage(uri, userId);
+      console.log('✅ Image uploaded successfully:', imageUrl);
+  
+      console.log('📝 Saving image URL to Firestore...');
+      await saveProfileImageUrl(userId, imageUrl);
+      console.log('✅ Image URL saved in Firestore');
+  
+    } catch (error: any) {
+      console.error('❌ Upload or Firestore save failed:', error.message || error);
     }
   };
+  
+  
+  
 
   const openEmail = () => Linking.openURL('mailto:kultur@iku.edu.tr');
   const makeCall = (phone: string) => Linking.openURL(`tel:${phone}`);
@@ -67,7 +98,7 @@ const ProfileScreen: React.FC = () => {
           <Text style={styles.screenTitle}>My Profile</Text>
         </LinearGradient>
 
-        <TouchableOpacity onPress={pickImage}>
+        <TouchableOpacity onPress={handleProfileImageUpload}>
           <Image
             source={
               profileImage
